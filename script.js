@@ -40,6 +40,7 @@ let movementGravity = 0.4;
 let movementX = -2; //Obstacle speed movement
 let movementY = 0; 
 
+let gameOver = false;
 
 window.onload = function() {
     //Game Board
@@ -67,24 +68,38 @@ window.onload = function() {
 
 //Game loop
 function update(){
+    if (gameOver){
+        return;
+    }
     requestAnimationFrame(update);
     context.clearRect(0,0,gameBoard.width,gameBoard.height);
 
     //char
     movementY += movementGravity;
-    char.y += movementY;
+    char.y = Math.max(char.y + movementY, 0);
     context.drawImage(charCanvas,char.x,char.y,char.width,char.height);
+
+    if (char.y > gameBoard.height){
+        gameOver = true;
+    }
 
     //Obstacle
     for (let i = 0; i< obstacle.length; i++){
         let obs = obstacle[i];
         obs.x += movementX;
         context.drawImage(obs.img,obs.x,obs.y,obs.width,obs.height);
+
+        if (Collision(char, obs)){
+            gameOver = true;
+        }
     }
 
 }
 
 function placeObstacle(){
+    if (gameOver){
+        return;
+    }
     console.log("placeObstacle")
     passThrough = gameBoard.height/4;
     let randomObsY = obstacleY - obstacleHeight/4 - Math.random()*(obstacleHeight/2);
@@ -111,8 +126,16 @@ function placeObstacle(){
 
 }
 
+function Collision(cPos, oPos){
+    return cPos.x < oPos.x + oPos.width &&
+        cPos.x + cPos.width > oPos.x && 
+        cPos.y < oPos.y + oPos.height &&
+        cPos.y + cPos.height > oPos.y;
+}
+
 function moveChar(e){
     if (e.code == "Space" || e.code == "ArrowUp"){
         movementY = -6;
     }
 }
+
