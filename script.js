@@ -40,8 +40,15 @@ let movementGravity = 0.4;
 let movementX = -2; //Obstacle speed movement
 let movementY = 0; 
 
+//----------------
+//Game Parameters
+//----------------
 let gameOver = false;
+let score = 0;
 
+//----------------
+//Chargement du jeu
+//----------------
 window.onload = function() {
     //Game Board
     gameBoard = document.getElementById("gameBoard");
@@ -68,10 +75,10 @@ window.onload = function() {
 
 //Game loop
 function update(){
+    requestAnimationFrame(update);
     if (gameOver){
         return;
     }
-    requestAnimationFrame(update);
     context.clearRect(0,0,gameBoard.width,gameBoard.height);
 
     //char
@@ -92,6 +99,24 @@ function update(){
         if (Collision(char, obs)){
             gameOver = true;
         }
+
+        if (!obs.checked && char.x > obs.x + obs.width ){
+            score += 0.5;
+            obs.checked = true;
+        }
+    }
+
+    while (obstacle.length > 0 && obstacle[0].x < 0 - obstacleWidth){
+        obstacle.shift();
+    }
+
+    context.fillStyle = "white"
+    context.font = "45px sans-serif"
+    context.fillText(score, 5, 45)
+
+
+    if (gameOver){
+        context.fillText("GAME OVER", 45, 360)
     }
 
 }
@@ -133,9 +158,17 @@ function Collision(cPos, oPos){
         cPos.y + cPos.height > oPos.y;
 }
 
-function moveChar(e){
-    if (e.code == "Space" || e.code == "ArrowUp"){
+function moveChar(e) {
+    if (e.code == "Space" || e.code == "ArrowUp") {
+        //jump
         movementY = -6;
+
+        //reset game
+        if (gameOver) {
+            char.y = charY;
+            obstacle = [];
+            score = 0;
+            gameOver = false;
+        }
     }
 }
-
